@@ -1,101 +1,66 @@
-import java.util.*;
-
 public class NQueens {
+    int size; //size of the chessboard.
+    private int[][] boards;
 
-    // queenArray=chessboard, where each array element=column
-    // and the value at each element=row
-    private int[] queenArray;
-    private int N;                  //size of board & # of queens
-    private boolean success;        //flags if a solution is found
-    private int currCol, currRow;   //used internally
-
-    public NQueens(int N) {
-        // This constructor takes in a positive integer N and creates
-        // an array of N elements (the columns) which hold values that
-        // correspond to the row at that column.
-
-        this.N = N;
-        if (N <= 0) {
-            throw new ArrayIndexOutOfBoundsException();
-        }
-        queenArray = new int[N];
-
-        placeNQueens();
-        printToConsole();
-        queenArray = null;
+    public NQueens(int size2) {
+        this.size=size2;
+        boards = new int[size][size];
     }
 
-    private boolean TestPiece() {
-        // This method returns false if the currRow and currCol can be captured
-        // by another queen, otherwise it returns true.
-
-        for (int i = currCol - 1; i >= 0; i--) {
-            if ((queenArray[i] == currRow) ||
-                    (queenArray[i] == (currRow + (currCol - i))) ||
-                    (queenArray[i] == (currRow - (currCol - i)))) {
-                return false;
-            }
+    public boolean placeNQueens() throws Exception {
+        if(size<=0)
+            throw new Exception();
+        if(!placeNQueens(0,boards)) {
+            System.out.printf("There is no solution for placing %d Queens on %d*%d chessboard.\n",size,size,size);
+            return false;
         }
-
         return true;
     }
 
-    public void printToConsole() {
-        // This method simply prints out the current state of the
-        // chess board. Note that success==true when there is a valid
-        // configuration present in the queenArray.
-
-        System.out.println();
-        if (success == true) {
-            for (int col = 0; col < N; col++) {
-                for (int row = 0; row < N; row++) {
-                    if (queenArray[col] == row) {
-                        System.out.print("Q");
-                    } else {
-                        System.out.print("-");
-                    }
-                }
-                System.out.println();
+    //place a Queen in each column.
+    boolean placeNQueens(int col,int[][] board) {
+        if(col==size) {
+            printToConsole(board);
+            return true;
+        }
+        for(int row = 0; row<size;row++) {
+            if(!isAttacked(row,col,board)) {
+                board[row][col]=1;
+                if(placeNQueens(col+1,board))
+                    return true;
+                board[row][col]=0;
             }
-        } else {
-            System.out.println("No solution possible.");
+        }
+        return false;
+    }
+
+    //check if the Queens attack each other.
+    boolean isAttacked(int row, int col, int[][] board) {
+        int i, j;
+        for (i = 0; i < col; i++)
+            if (board[row][i] == 1)
+                return true;
+        for (i = row, j = col; i >= 0 && j >= 0; i--, j--)
+            if (board[i][j] == 1)
+                return true;
+        for (i = row, j = col; j >= 0 && i < size; i++, j--)
+            if (board[i][j] == 1)
+                return true;
+        return false;
+    }
+
+    //print the chessboard.
+    void printToConsole(int[][] board) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if(board[i][j] == 1)
+                    System.out.print(" Q ");
+                if(board[i][j] == 0)
+                    System.out.print(" _ ");
+            }
+            System.out.println();
         }
     }
 
-    public boolean placeNQueens(){
-        // This method uses backtracking to place N queens on the
-        // NxN chess board.
 
-            currRow = queenArray[currCol];
-
-            // Infinite loop, but we'll return from the function
-            // if currCol gets to N (past the rightmost column)
-            // (ie. a solution was found)
-            // or falls below 0 (past the leftmost column)
-            // (ie. no solutions were found).
-            for (; ; ) {
-                if (TestPiece() == true) {
-                    System.out.print(".");
-                    queenArray[currCol] = currRow;
-                    currCol++;
-                    if (currCol >= N) {
-                        success = true;
-                        return success;
-                    }
-                    currRow = queenArray[currCol];
-                } else { // advance
-                    currRow++;
-                    while (currRow >= N) { //backtrack
-                        System.out.print("\u0008");
-                        queenArray[currCol] = 0;
-                        currCol--;
-                        if (currCol < 0) {
-                            success = false;
-                            return success;
-                        }
-                        currRow = queenArray[currCol] + 1;
-                    }
-                }
-            }
-        }
 }
